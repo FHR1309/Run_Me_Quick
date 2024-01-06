@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from enum import Enum
+from pydantic import BaseModel
 
 app = FastAPI()
 
@@ -47,3 +48,30 @@ async def runCode(code:str|None = None, lang:Languages = Languages.python):
 
     return returns
 
+class Code_body(BaseModel):
+    code: str | None = None
+    lang: Languages
+    u_name: UName | None = None
+
+
+@app.post("/codesend/")
+async def send(codes:Code_body):
+    code_dict = codes.dict()
+    if codes.code:
+        code_dict.update({"output":codes.code.upper()})
+    return code_dict
+
+
+class Item(BaseModel):
+    name: str
+    description: str | None = None
+    price: float
+    tax: float | None = None
+
+@app.post("/items/")
+async def create_item(item: Item):
+    item_dict = item.dict()
+    if item.tax:
+        price_with_tax = item.price + item.tax
+        item_dict.update({"price_with_tax": price_with_tax})
+    return item_dict
