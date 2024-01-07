@@ -1,8 +1,24 @@
+import subprocess
 from fastapi import FastAPI
 from enum import Enum
 from pydantic import BaseModel
+import os
+import subprocess
 
 app = FastAPI()
+
+
+### SUBPROCESS ###
+code = """
+for i in range(3)
+    print("Hello world")
+"""
+
+result = subprocess.run(['python3'],input=code, capture_output=True, encoding='UTF-8')
+
+show = result.stdout if len(result.stderr) == 0 else "error found\n"+result.stderr
+print(show)
+
 
 @app.get("/")
 async def root():
@@ -28,38 +44,6 @@ async def users(u_id):
         return {"message": "This is a valid u_id"}
     else:
         return {"message": "User id not found"}
-
-
-class Languages(str, Enum):
-    java = "Java"
-    python = "Python"
-    cpp = "cpp"
-    js = "javascript"
-@app.get("/code/run/{lang}")
-
-async def runCode(code:str|None = None, lang:Languages = Languages.python):
-
-    returns = {"code": code, "lang": lang}
-    # return returns
-    if code:
-        returns.update({"got code ": code})
-    if lang:
-        returns.update({"got lang ": lang})
-
-    return returns
-
-class Code_body(BaseModel):
-    code: str | None = None
-    lang: Languages
-    u_name: UName | None = None
-
-
-@app.post("/codesend/")
-async def send(codes:Code_body):
-    code_dict = codes.dict()
-    if codes.code:
-        code_dict.update({"output":codes.code.upper()})
-    return code_dict
 
 
 class Item(BaseModel):
